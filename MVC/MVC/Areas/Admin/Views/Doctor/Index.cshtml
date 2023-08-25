@@ -1,0 +1,318 @@
+﻿@using MVC.Areas.Admin.Models
+@model List<DoctorItem>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@section customStyles{
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json" />
+}
+@section customScripts{
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            new DataTable('#example', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                },
+                "columnDefs": [
+
+                    {
+                        "targets": 2,
+                        "orderable": false,
+                    },
+                    {
+                        "targets": 3,
+                        "orderable": false,
+                    }
+
+                ],
+            });
+
+            $("#btnNewDoc").click(function () {
+                $("#txtName").val("");
+                $("#txtDegree").val("");
+
+                $("#exampleModalSave").modal("show");
+            });
+
+            $("#btnSave").click(function () {
+                var file = $("#fuDoctorPhoto").get(0).files[0];
+                var name = $("#txtName").val();
+                var degree = $("#txtDegree").val();
+
+                var fd = new FormData();
+
+                fd.append("doctorPhoto", file);
+                fd.append("name", name);
+                fd.append("degree", degree);
+
+                $.ajax({
+                    url: "/Admin/Doctor/Save",
+                    method: "post",
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    data: fd,
+                    success: function (response) {
+                        if (response.isSuccess) {
+                            Swal.fire({
+                                title: 'İşlem Başarılı',
+                                text: response.message,
+                                icon: 'success',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Tamam'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $("#btnClearSave").trigger("click");
+                                    $("#exampleModalSave").modal("hide");
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                        else {
+                            Swal.fire(
+                                'İşlem Başarısız',
+                                response.message,
+                                'error'
+                            )
+                        }
+                    }
+                })
+            });
+
+            $(".btnDelete").click(function () {
+
+                var doctorId = $(this).attr("doctorid");
+
+                Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: "Silme işlemi geri alınamaz!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sil!',
+                    cancelButtonText: 'Vazgeç!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: "/Admin/Doctor/Delete/" + doctorId,
+                            method: "post",
+                            datatype: "json",
+                            success: function (response) {
+                                if (response.isSuccess) {
+                                    Swal.fire('İşlem Başarılı', response.message, 'success');
+                                    window.location.reload();
+                                }
+                                else {
+                                    var errors = "";
+                                    for (var i = 0; i < response.errorMessages.length; i++) {
+                                        errors += response.errorMessages[i] + "<br />";
+                                    }
+
+                                    Swal.fire('İşlem Başarısız', response.message + "<br />" + errors, 'error')
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        Swal.fire('İşlem İptal Edildi', '', 'info')
+                    }
+                })
+            });
+
+            $(".btnEdit").click(function () {
+
+                var doctorId = $(this).attr("doctorid");
+
+                $.ajax({
+                    url: "/Admin/Doctor/GetDoctor/" + doctorId,
+                    method: "post",
+                    datatype: "json",
+                    success: function (response) {
+                        $("#txtNameEdit").val(response.name);
+                        $("#txtDegreeEdit").val(response.degree);
+                        $("#hfDoctorId").val(doctorId);
+
+                        $("#exampleModalEdit").modal("show");
+                    }
+                });
+
+            });
+
+            $("#btnUpdate").click(function () {
+                var file = $("#fuDoctorPhotoEdit").get(0).files[0];
+                var name = $("#txtNameEdit").val();
+                var degree = $("#txtDegreeEdit").val();
+                var id = $("#hfDoctorId").val();
+
+                var fd = new FormData();
+                fd.append("id", id);
+                fd.append("doctorPhoto", file);
+                fd.append("name", name);
+                fd.append("degree", degree);
+
+
+
+                $.ajax({
+                    url: "/Admin/Doctor/Update",
+                    method: "post",
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    data: fd,
+                    success: function (response) {
+
+                        if (response.isSuccess) {
+                            Swal.fire({
+                                title: 'İşlem Başarılı',
+                                text: response.message,
+                                icon: 'success',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Tamam'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $("#exampleModalEdit").modal("hide");
+                                    window.location.reload();
+                                }
+                            });
+                        }
+
+                        else {
+                            Swal.fire('İşlem Başarısız', response.message, 'error')
+                        }
+                    }
+                })
+            });
+        });
+    </script>
+}
+<div>
+    <button class="btn btn-primary" id="btnNewDoc">Yeni Kayıt</button>
+</div>
+
+<table id="example" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>İsim</th>
+            <th>Ünvan</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <img src='@item.PicturePath' style="width:150px;" />
+                </td>
+                <td>@item.Name</td>
+                <td>@item.Degree</td>
+                <td>
+                    <button type="button" class="btn btn-warning btnEdit text-right" doctorid='@item.Id'>
+                        DÜZENLE
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btnDelete" doctorid='@item.Id'>SİL</button>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>#</th>
+            <th>İsim</th>
+            <th>Ünvan</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="modal fade" data-backdrop="static" id="exampleModalSave" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Doktor Ekleme Formu</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Adı</label>
+                            <input type="text" class="form-control border" id="txtName" placeholder="Doktor Adı Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Unvanı</label>
+                            <input id="txtDegree" class="form-control border" placeholder="Unvan Girinniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputFile">Resim</label>
+                            <div class="input-group">
+                                <input class="form-control" type="file" id="fuDoctorPhoto">
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button id="btnSave" type="button" class="btn btn-primary">Kaydet</button>
+                        </div>
+
+
+                        <button id="btnClearSave" type="reset" style="display:none;"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-backdrop="static" id="exampleModalEdit" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Doktor Ekleme Formu</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <input type="hidden" id="hfDoctorId" />
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Adı</label>
+                            <input type="text" class="form-control border" id="txtNameEdit" placeholder="Doktor Adı Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Unvanı</label>
+                            <input id="txtDegreeEdit" class="form-control border" placeholder="Unvan Girinniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputFileEdit">Resim</label>
+                            <div class="input-group">
+                                <input class="form-control" type="file" id="fuDoctorPhotoEdit">
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button id="btnUpdate" type="button" class="btn btn-primary">Kaydet</button>
+                        </div>
+
+
+                        <button id="btnClearSaveEdit" type="reset" style="display:none;"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

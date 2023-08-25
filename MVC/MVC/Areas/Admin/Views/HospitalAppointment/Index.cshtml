@@ -1,0 +1,341 @@
+﻿@using MVC.Areas.Admin.ViewModels;
+@model HospitalAppointmentViewModel
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@section customStyles{
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json" />
+}
+@section customScripts{
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            new DataTable('#example3', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                },
+                "columnDefs": [
+
+                    {
+                        "targets": 2,
+                        "orderable": false,
+                    },
+                    {
+                        "targets": 3,
+                        "orderable": false,
+                    }
+
+                ],
+            });
+
+            $("#btnNewHosAp").click(function () {
+                $("#doctorSelect").val(-1);
+                $("#patientSelect").val(-1);
+                $("#selectTime").val();
+                $("#exampleModalSave").modal("show");
+            });
+
+            $("#btnSave").click(function () {
+                var doctorId = $("#doctorSelect").val();
+                var patientId = $("#patientSelect").val();
+                var time = $("#selectTime").val();
+
+                var fd = new FormData();
+
+                fd.append("doctorId", doctorId);
+                fd.append("patientId", patientId);
+                fd.append("time", time);
+
+                $.ajax({
+                    url: "/Admin/HospitalAppointment/Save",
+                    method: "post",
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    data: fd,
+                    success: function (response) {
+                        if (response.isSuccess) {
+                            Swal.fire({
+                                title: 'İşlem Başarılı',
+                                text: response.message,
+                                icon: 'success',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Tamam'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $("#btnClearSave").trigger("click");
+                                    $("#exampleModalSave").modal("hide");
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                        else {
+                            Swal.fire(
+                                'İşlem Başarısız',
+                                response.message,
+                                'error'
+                            )
+                        }
+                    }
+                })
+            });
+
+            $(".btnDelete").click(function () {
+
+                var hospitalAppointmentId = $(this).attr("hospitalappointmentid");
+
+                Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: "Silme işlemi geri alınamaz!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sil!',
+                    cancelButtonText: 'Vazgeç!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: "/Admin/HospitalAppointment/Delete/" + hospitalAppointmentId,
+                            method: "post",
+                            datatype: "json",
+                            success: function (response) {
+                                if (response.isSuccess) {
+                                    Swal.fire('İşlem Başarılı', response.message, 'success');
+                                    window.location.reload();
+                                }
+                                else {
+                                    var errors = "";
+                                    for (var i = 0; i < response.errorMessages.length; i++) {
+                                        errors += response.errorMessages[i] + "<br />";
+                                    }
+
+                                    Swal.fire('İşlem Başarısız', response.message + "<br />" + errors, 'error')
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        Swal.fire('İşlem İptal Edildi', '', 'info')
+                    }
+                })
+            });
+
+            $(".btnEdit").click(function () {
+
+                var hospitalAppointmentId = $(this).attr("hospitalappointmentid");
+
+                $.ajax({
+                    url: "/Admin/HospitalAppointment/GetHospitalAppointment/" + hospitalAppointmentId,
+                    method: "post",
+                    datatype: "json",
+                    success: function (response) {
+                        $("#doctorSelectEdit").val(response.doctorId);
+                        $("#patientSelectEdit").val(response.patientId);
+                        $("#timeSelectEdit").val(response.time);
+                        $("#hfHospitalAppointmentId").val(hospitalAppointmentId);
+
+                        $("#exampleModalEdit").modal("show");
+                    }
+                });
+
+            });
+
+            $("#btnUpdate").click(function () {
+
+                var doctorId = $("#doctorSelectEdit").val();
+                var patientId = $("#patientSelectEdit").val();
+                var time = $("#timeSelectEdit").val();
+                var id = $("#hfHospitalAppointmentId").val();
+
+                var fd = new FormData();
+                fd.append("id", id);
+                fd.append("doctorId", doctorId);
+                fd.append("patientId", patientId);
+                fd.append("time", time);
+
+
+                $.ajax({
+                    url: "/Admin/HospitalAppointment/Update",
+                    method: "post",
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    data: fd,
+                    success: function (response) {
+
+                        if (response.isSuccess) {
+                            Swal.fire({
+                                title: 'İşlem Başarılı',
+                                text: response.message,
+                                icon: 'success',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Tamam'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $("#exampleModalEdit").modal("hide");
+                                    window.location.reload();
+                                }
+                            });
+                        }
+
+                        else {
+                            Swal.fire('İşlem Başarısız', response.message, 'error')
+                        }
+                    }
+                })
+            });
+        });
+    </script>
+}
+<div>
+    <button class="btn btn-primary" id="btnNewHosAp">Yeni Kayıt</button>
+</div>
+
+<table id="example3" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Doktor</th>
+            <th>Hasta</th>
+            <th>Randevu</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.HospitalAppointments)
+        {
+            <tr>
+                <td>@item.Doctors.Name (@item.Doctors.Degree)</td>
+                <td>@item.Patients.Name @item.Patients.SurName</td>
+                <td>@item.Time.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <button type="button" class="btn btn-warning btnEdit text-right" hospitalappointmentid='@item.Id'>
+                        DÜZENLE
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btnDelete" hospitalappointmentid='@item.Id'>SİL</button>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>Doktor</th>
+            <th>Hasta</th>
+            <th>Randevu</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="modal fade" data-backdrop="static" id="exampleModalSave" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Randevu Ekleme Formu</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Doktor</label>
+                            <select id="doctorSelect" class="form-control border">
+                                <option selected value="-1">Doktor Seciniz</option>
+                                @foreach (var doctor in Model.Doctors)
+                                {
+                                    <option value="@doctor.Id">@doctor.Name (@doctor.Degree)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hasta</label>
+                            <select id="patientSelect" class="form-control border">
+                                <option selected value="-1">Hasta Seciniz</option>
+                                @foreach (var hasta in Model.Patients)
+                                {
+                                    <option value="@hasta.Id">@hasta.Name @hasta.SurName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Randevu Tarihi</label>
+                            <input type="date" id="selectTime" />
+                        </div>
+                    </div>
+
+
+                    <div class="card-footer">
+                        <button id="btnSave" type="button" class="btn btn-primary">Kaydet</button>
+                    </div>
+
+
+                    <button id="btnClearSave" type="reset" style="display:none;"></button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-backdrop="static" id="exampleModalEdit" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Randevu Düzenleme Formu</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <input type="hidden" id="hfHospitalAppointmentId" />
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Doktor</label>
+                            <select id="doctorSelectEdit" class="form-control border">
+                                <option selected value="-1">Doktor Seciniz</option>
+                                @foreach (var doctor in Model.Doctors)
+                                {
+                                    <option value="@doctor.Id">@doctor.Name (@doctor.Degree)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hasta</label>
+                            <select id="patientSelectEdit" class="form-control border">
+                                <option selected value="-1">Hasta Seciniz</option>
+                                @foreach (var hasta in Model.Patients)
+                                {
+                                    <option value="@hasta.Id">@hasta.Name @hasta.SurName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Randevu Tarihi</label>
+                            <input type="date" id="selectTimeEdit" />
+                        </div>
+                    </div>
+
+
+                    <div class="card-footer">
+                        <button id="btnUpdate" type="button" class="btn btn-primary">Kaydet</button>
+                    </div>
+
+
+                    <button id="btnClearEdit" type="reset" style="display:none;"></button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

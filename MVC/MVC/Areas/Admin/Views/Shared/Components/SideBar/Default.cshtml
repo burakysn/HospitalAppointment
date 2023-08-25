@@ -1,0 +1,79 @@
+﻿@using MVC.Areas.Admin.Models
+@model AdminUserItem
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+        <div class="sidebar-brand-text mx-3">@Model.FullName</div>
+    </a>
+
+    <hr class="sidebar-divider my-0">
+
+    <li class="nav-item active">
+        <a class="nav-link" href="/Admin/Home/Index">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/Hospital/Index">
+            <i class="fas fa-fw fa-h-square"></i>
+            <span>Hastane</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/Department/Index">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Departman</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/Doctor/Index">
+            <i class="fas fa-fw fa-user-md"></i>
+            <span>Doktor</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/Patient/Index">
+            <i class="fas fa-fw fa-user-plus"></i>
+            <span>Hasta</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/HospitalAppointment/Index">
+            <i class="fas fa-fw fa-user-plus"></i>
+            <span>Randevu</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/DoctorHospital/Index">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Doktor Hastane</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/DoctorDepartment/Index">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Doktor Departman</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/PatientResult/Index">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Hasta Sonuçları</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Admin/Authentication/SignOut">
+            <span>Çıkış Yap</span>
+        </a>
+    </li>
+
+</ul>

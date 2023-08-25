@@ -1,0 +1,38 @@
+﻿@using MVC.Areas.Admin.Models;
+@model PatientItem
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+        <div class="sidebar-brand-text mx-3">asdasd</div>
+    </a>
+
+    <hr class="sidebar-divider my-0">
+
+    <li class="nav-item active">
+        <a class="nav-link" href="/Patient/Home/Index">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Patient/Profile/Index/@Model.Id">
+            <i class="fas fa-fw fa-h-square"></i>
+            <span>Profil</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Patient/PatientResult/Index/@Model.Id">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Sonuçlarım</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/Patient/Authentication/SignOut">
+            <span>Çıkış Yap</span>
+        </a>
+    </li>
+
+</ul>

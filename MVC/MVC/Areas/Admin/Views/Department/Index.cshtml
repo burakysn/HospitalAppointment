@@ -1,0 +1,311 @@
+﻿@using MVC.Areas.Admin.ViewModels;
+@model DepartmentViewModel
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@section customStyles{
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json" />
+}
+@section customScripts{
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            new DataTable('#example3', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                },
+                "columnDefs": [
+
+                    {
+                        "targets": 2,
+                        "orderable": false,
+                    },
+                    {
+                        "targets": 3,
+                        "orderable": false,
+                    }
+
+                ],
+            });
+
+            $("#btnNewDep").click(function () {
+                $("#txtName").val("");
+                $("#hospitalSelect").val(-1);
+
+                $("#exampleModalSave").modal("show");
+            });
+
+            $("#btnSave").click(function () {
+                var name = $("#txtName").val();
+                var hospitalId = $("#hospitalSelect").val();
+
+                var fd = new FormData();
+
+                fd.append("name", name);
+                fd.append("hospitalId", hospitalId);
+
+                $.ajax({
+                    url: "/Admin/Department/Save",
+                    method: "post",
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    data: fd,
+                    success: function (response) {
+                        if (response.isSuccess) {
+                            Swal.fire({
+                                title: 'İşlem Başarılı',
+                                text: response.message,
+                                icon: 'success',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Tamam'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $("#btnClearSave").trigger("click");
+                                    $("#exampleModalSave").modal("hide");
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                        else {
+                            Swal.fire(
+                                'İşlem Başarısız',
+                                response.message,
+                                'error'
+                            )
+                        }
+                    }
+                })
+            });
+
+            $(".btnDelete").click(function () {
+
+                var departmentId = $(this).attr("departmentid");
+
+                Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: "Silme işlemi geri alınamaz!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sil!',
+                    cancelButtonText: 'Vazgeç!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: "/Admin/Department/Delete/" + departmentId,
+                            method: "post",
+                            datatype: "json",
+                            success: function (response) {
+                                if (response.isSuccess) {
+                                    Swal.fire('İşlem Başarılı', response.message, 'success');
+                                    window.location.reload();
+                                }
+                                else {
+                                    var errors = "";
+                                    for (var i = 0; i < response.errorMessages.length; i++) {
+                                        errors += response.errorMessages[i] + "<br />";
+                                    }
+
+                                    Swal.fire('İşlem Başarısız', response.message + "<br />" + errors, 'error')
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        Swal.fire('İşlem İptal Edildi', '', 'info')
+                    }
+                })
+            });
+
+            $(".btnEdit").click(function () {
+
+                var departmentId = $(this).attr("departmentid");
+
+                $.ajax({
+                    url: "/Admin/Department/GetDepartment/" + departmentId,
+                    method: "post",
+                    datatype: "json",
+                    success: function (response) {
+                        $("#txtNameEdit").val(response.name);
+                        $("#hospitalSelectEdit").val(response.hospitalId);
+                        $("#hfDepartmentId").val(departmentId);
+
+                        $("#exampleModalEdit").modal("show");
+                    }
+                });
+
+            });
+
+            $("#btnUpdate").click(function () {
+
+                var name = $("#txtNameEdit").val();
+                var hospitalId = $("#hospitalSelectEdit").val();
+                var id = $("#hfDepartmentId").val();
+
+                var fd = new FormData();
+                fd.append("id", id);
+                fd.append("name", name);
+                fd.append("hospitalId", hospitalId);
+
+
+                $.ajax({
+                    url: "/Admin/Department/Update",
+                    method: "post",
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    data: fd,
+                    success: function (response) {
+
+                        if (response.isSuccess) {
+                            Swal.fire({
+                                title: 'İşlem Başarılı',
+                                text: response.message,
+                                icon: 'success',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Tamam'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $("#exampleModalEdit").modal("hide");
+                                    window.location.reload();
+                                }
+                            });
+                        }
+
+                        else {
+                            Swal.fire('İşlem Başarısız', response.message, 'error')
+                        }
+                    }
+                })
+            });
+        });
+    </script>
+}
+<div>
+    <button class="btn btn-primary" id="btnNewDep">Yeni Kayıt</button>
+</div>
+
+<table id="example3" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>İsim</th>
+            <th>Hastane Id</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Deparment)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Hospitals.Name</td>
+                <td>
+                    <button type="button" class="btn btn-warning btnEdit text-right" departmentid='@item.Id'>
+                        DÜZENLE
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btnDelete" departmentid='@item.Id'>SİL</button>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>İsim</th>
+            <th>Hastane Id</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="modal fade" data-backdrop="static" id="exampleModalSave" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Depatman Ekleme Formu</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Adı</label>
+                            <input type="text" class="form-control border" id="txtName" placeholder="Departman Adı Giriniz">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Hastane</label>
+                        <select id="hospitalSelect" class="form-control border">
+                            <option selected value="-1">Hastane Seciniz</option>
+                            @foreach (var hospital in Model.Hospital)
+                            {
+                                <option value="@hospital.Id">@hospital.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="card-footer">
+                        <button id="btnSave" type="button" class="btn btn-primary">Kaydet</button>
+                    </div>
+
+
+                    <button id="btnClearSave" type="reset" style="display:none;"></button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-backdrop="static" id="exampleModalEdit" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Departman Düzenleme Formu</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <input type="hidden" id="hfDepartmentId" />
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Adı</label>
+                            <input type="text" class="form-control border" id="txtNameEdit" placeholder="Adı Giriniz">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Hastane</label>
+                        <select id="hospitalSelectEdit" class="form-control border">
+                            <option selected value="-1">Hastane Seciniz</option>
+                            @foreach (var hospital in Model.Hospital)
+                            {
+                                <option value="@hospital.Id">@hospital.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="card-footer">
+                        <button id="btnUpdate" type="button" class="btn btn-primary">Kaydet</button>
+                    </div>
+
+
+                    <button id="btnClearEdit" type="reset" style="display:none;"></button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

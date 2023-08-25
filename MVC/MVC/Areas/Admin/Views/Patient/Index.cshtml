@@ -1,0 +1,372 @@
+﻿@using MVC.Areas.Admin.Models
+@model List<PatientItem>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+@section customStyles{
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json" />
+}
+@section customScripts{
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            new DataTable('#example2', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                },
+                "columnDefs": [
+
+                    {
+                        "targets": 6,
+                        "orderable": false,
+                    },
+                    {
+                        "targets": 7,
+                        "orderable": false,
+                    }
+
+                ],
+            });
+
+            $("#btnNewPat").click(function () {
+                $("#txtName").val("");
+                $("#txtSurname").val("");
+                $("#txtEmail").val("");
+                $("#txtPassword").val("");
+                $("#txtTcNo").val("");
+                $("#txtPhoneNumber").val("");
+
+                $("#exampleModalSave").modal("show");
+            });
+
+            $("#btnSave").click(function () {
+                var name = $("#txtName").val();
+                var surname = $("#txtSurname").val();
+                var email = $("#txtEmail").val();
+                var password = $("#txtPassword").val();
+                var tcNo = $("#txtTcNo").val();
+                var phoneNumber = $("#txtPhoneNumber").val();
+
+                var fd = new FormData();
+
+                fd.append("name", name);
+                fd.append("surname", surname);
+                fd.append("email", email);
+                fd.append("password", password);
+                fd.append("tcNo", tcNo);
+                fd.append("phoneNumber", phoneNumber);
+
+                $.ajax({
+                    url: "/Admin/Patient/Save",
+                    method: "post",
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    data: fd,
+                    success: function (response) {
+                        if (response.isSuccess) {
+                            Swal.fire({
+                                title: 'İşlem Başarılı',
+                                text: response.message,
+                                icon: 'success',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Tamam'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $("#btnClearSave").trigger("click");
+                                    $("#exampleModalSave").modal("hide");
+
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                        else {
+                            Swal.fire(
+                                'İşlem Başarısız',
+                                response.message,
+                                'error'
+                            )
+                        }
+                    }
+                })
+            });
+
+            $(".btnDelete").click(function () {
+
+                var patientId = $(this).attr("patientid");
+
+                Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: "Silme işlemi geri alınamaz!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sil!',
+                    cancelButtonText: 'Vazgeç!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: "/Admin/Hospital/Delete/" + patientId,
+                            method: "post",
+                            datatype: "json",
+                            success: function (response) {
+                                if (response.isSuccess) {
+                                    Swal.fire('İşlem Başarılı', response.message, 'success');
+                                    window.location.reload();
+                                }
+                                else {
+                                    var errors = "";
+                                    for (var i = 0; i < response.errorMessages.length; i++) {
+                                        errors += response.errorMessages[i] + "<br />";
+                                    }
+
+                                    Swal.fire('İşlem Başarısız', response.message + "<br />" + errors, 'error')
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        Swal.fire('İşlem İptal Edildi', '', 'info')
+                    }
+                })
+            });
+
+            $(".btnEdit").click(function () {
+
+                var patientId = $(this).attr("patientid");
+
+                $.ajax({
+                    url: "/Admin/Patient/GetPatient/" + patientId,
+                    method: "post",
+                    datatype: "json",
+                    success: function (response) {
+                        $("#txtNameEdit").val(response.name);
+                        $("#txtSurnameEdit").val(response.surName);
+                        $("#txtEmailEdit").val(response.email);
+                        $("#txtPasswordEdit").val(response.password);
+                        $("#txtTcNoEdit").val(response.tcNo);
+                        $("#txtPhoneNumberEdit").val(response.phoneNumber);
+                        $("#hfPatientId").val(patientId);
+
+                        $("#exampleModalEdit").modal("show");
+                    }
+                });
+
+            });
+
+            $("#btnUpdate").click(function () {
+
+                var name = $("#txtNameEdit").val();
+                var surname = $("#txtSurnameEdit").val();
+                var email = $("#txtEmailEdit").val();
+                var password = $("#txtPasswordEdit").val();
+                var tcNo = $("#txtTcNoEdit").val();
+                var phoneNumber = $("#txtPhoneNumberEdit").val();
+                var id = $("#hfPatientId").val();
+
+                var fd = new FormData();
+
+                fd.append("id", id);
+                fd.append("name", name);
+                fd.append("name", name);
+                fd.append("surname", surname);
+                fd.append("email", email);
+                fd.append("password", password);
+                fd.append("tcNo", tcNo);
+                fd.append("phoneNumber", phoneNumber);
+
+
+
+                $.ajax({
+                    url: "/Admin/Patient/Update",
+                    method: "post",
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    data: fd,
+                    success: function (response) {
+
+                        if (response.isSuccess) {
+                            Swal.fire({
+                                title: 'İşlem Başarılı',
+                                text: response.message,
+                                icon: 'success',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Tamam'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $("#exampleModalEdit").modal("hide");
+                                    window.location.reload();
+                                }
+                            });
+                        }
+
+                        else {
+                            Swal.fire('İşlem Başarısız', response.message, 'error')
+                        }
+                    }
+                })
+            });
+
+        });
+    </script>
+}
+<div>
+    <button class="btn btn-primary" id="btnNewPat">Yeni Kayıt</button>
+</div>
+
+<table id="example2" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>İsim</th>
+            <th>Soyİsim</th>
+            <th>Email</th>
+            <th>Parola</th>
+            <th>Tc No</th>
+            <th>Telefon No</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.SurName</td>
+                <td>@item.Email</td>
+                <td>@item.Password</td>
+                <td>@item.TcNo</td>
+                <td>@item.PhoneNumber</td>
+                <td>
+                    <button type="button" class="btn btn-warning btnEdit text-right" patientid='@item.Id'>
+                        DÜZENLE
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btnDelete" patientid='@item.Id'>SİL</button>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>İsim</th>
+            <th>Soyİsim</th>
+            <th>Email</th>
+            <th>Parola</th>
+            <th>Tc No</th>
+            <th>Telefon No</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="modal fade" data-backdrop="static" id="exampleModalSave" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Hasta Ekleme Formu</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Adı</label>
+                            <input type="text" class="form-control border" id="txtName" placeholder="Ad Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Soyadı</label>
+                            <input id="txtSurname" class="form-control border" placeholder="Soyad Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Email</label>
+                            <input id="txtEmail" class="form-control border" placeholder="Email Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Şifre</label>
+                            <input id="txtPassword" class="form-control border" placeholder="Şifre Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Tc No</label>
+                            <input id="txtTcNo" class="form-control border" placeholder="Tc No Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Telefon No</label>
+                            <input type="text" class="form-control border" id="txtPhoneNumber" placeholder="Telefon No Giriniz">
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button id="btnSave" type="button" class="btn btn-primary">Kaydet</button>
+                    </div>
+
+
+                    <button id="btnClearSave" type="reset" style="display:none;"></button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" data-backdrop="static" id="exampleModalEdit" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Hasta Düzenleme Formu</h1>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <input type="hidden" id="hfPatientId" />
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Adı</label>
+                            <input type="text" class="form-control border" id="txtNameEdit" placeholder="Ad Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Soyadı</label>
+                            <input id="txtSurnameEdit" class="form-control border" placeholder="Soyad Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Email</label>
+                            <input id="txtEmailEdit" class="form-control border" placeholder="Email Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Şifre</label>
+                            <input id="txtPasswordEdit" class="form-control border" placeholder="Şifre Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Tc No</label>
+                            <input id="txtTcNoEdit" class="form-control border" placeholder="Tc No Giriniz">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Telefon No</label>
+                            <input type="text" class="form-control border" id="txtPhoneNumberEdit" placeholder="Telefon No Giriniz">
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button id="btnUpdate" type="button" class="btn btn-primary">Kaydet</button>
+                    </div>
+
+
+                    <button id="btnClearEdit" type="reset" style="display:none;"></button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+﻿@using MVC.Areas.Admin.Models;
+@model List<PatientResultItem>
+@{
+    Layout = "~/Areas/Patient/Views/Shared/_LayoutPatient.cshtml";
+}
+@section customStyles{
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json" />
+}
+@section customScripts{
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            new DataTable('#example', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json'
+                },
+            });
+        });
+    </script>
+}
+<div>
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Açıklama</th>
+                <th>Randevu Tarihi</th>
+                <th>Doktor</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Description</td>
+                    <td>@item.HospitalAppointments.Time.ToString("yyyy-MM-dd")</td>
+                    <td>@item.Doctors.Name</td>
+                </tr>
+            }
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Açıklama</th>
+                <th>Randevu Tarihi</th>
+                <th>Doktor</th>
+            </tr>
+        </tfoot>
+    </table>
+
+</div>

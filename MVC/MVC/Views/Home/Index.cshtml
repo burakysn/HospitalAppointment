@@ -1,0 +1,87 @@
+﻿@using MVC.Areas.Admin.ViewModels;
+@{
+    Layout = "_Layout";   
+}
+@model GlobalViewModel
+<section id="counts" class="counts">
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-3 col-md-6">
+                <div class="count-box">
+                    <i class="fas fa-user-md"></i>
+                    <span data-purecounter-start="0" data-purecounter-end="@Model.DoctorCount" data-purecounter-duration="1" class="purecounter"></span>
+                    <p>Doktor</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mt-5 mt-md-0">
+                <div class="count-box">
+                    <i class="far fa-hospital"></i>
+                    <span data-purecounter-start="0" data-purecounter-end="@Model.DepartmentCount" data-purecounter-duration="1" class="purecounter"></span>
+                    <p>Departman</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
+                <div class="count-box">
+                    <i class="fas fa-flask"></i>
+                    <span data-purecounter-start="0" data-purecounter-end="@Model.PatientCount" data-purecounter-duration="1" class="purecounter"></span>
+                    <p>Hasta</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+<section id="services" class="services">
+    <div class="container">
+
+        <div class="section-title">
+            <h2>Departman</h2>
+            <p>Hastanelerimizde mevcut olan departmanlarımız.</p>
+        </div>
+
+        <div class="row">
+            @foreach(var item in Model.Departments){
+                <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+                    <div class="icon-box" style="width:1150px;height:350px;">
+                        <div class="icon"><i class="fas fa-heartbeat"></i></div>
+                        <h4><a href="javascript:;">@item.Name</a></h4>
+                    </div>
+                </div>
+            }
+            
+
+        </div>
+
+    </div>
+</section><!-- End Services Section -->
+<!-- ======= Doctors Section ======= -->
+<section id="doctors" class="doctors">
+    <div class="container">
+
+        <div class="section-title">
+            <h2>Doktor</h2>
+            <p>Hastaneler bünyesinde çalışan doktorlarımız.</p>
+        </div>
+
+        <div class="row">
+            @foreach (var item in Model.Doctors)
+            {
+                <div class="col-lg-6">
+                    <div class="member d-flex align-items-start">
+                        <div class="pic"><img src="@item.PicturePath" class="img-fluid" alt=""></div>
+                        <div class="member-info">
+                            <h4>@item.Name</h4>
+                            <span>@item.Degree</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+</section>
